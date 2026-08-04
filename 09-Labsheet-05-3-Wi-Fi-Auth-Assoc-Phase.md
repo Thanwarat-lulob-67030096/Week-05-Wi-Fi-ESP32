@@ -338,6 +338,22 @@ void app_main(void) {
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
+```
+ssociation ID (AID) คือหมายเลขประจำตัวเฉพาะ (Association ID) ที่ Access Point (AP) กำหนดให้กับ Station (ESP32) แต่ละตัวที่เข้ามาเชื่อมต่อสำเร็จใน Phase 3 (Association Phase) มีบทบาทสำคัญในการช่วยให้ AP สามารถบริหารจัดการทราฟฟิก, จัดคิวข้อมูล (Queue), และจัดการโหมดประหยัดพลังงาน (Power Saving Mode) สำหรับแต่ละอุปกรณ์ได้อย่างแม่นยำ โดยค่านี้จะถูกส่งคืนมาผ่านตัวแปร aid ภายในโครงสร้างข้อมูล wifi_event_sta_connected_t เมื่อเกิด Event WIFI_EVENT_STA_CONNECTED
+```
+
 2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+```
+เนื่องจากกระบวนการทำงานตามมาตรฐาน IEEE 802.11 แยกเลเยอร์ความปลอดภัยไว้อย่างชัดเจน โดย Phase 2 (Authentication) และ Phase 3 (Association) เป็นเพียงการยืนยันตัวตนระดับโครงสร้างพื้นฐานและการตกลงคุณสมบัติทางวิทยุ (Open System Authentication และ Association Request/Response) เท่านั้น ยังไม่มีการตรวจสอบรหัสผ่าน (PSK) รหัสผ่านจะถูกนำมาใช้ตรวจสอบความถูกต้องก็ต่อเมื่อเข้าสู่ Phase 4 (4-Way Handshake) ในขั้นตอนถัดไป ดังนั้น แม้จะใส่รหัสผ่านผิด ระบบก็ยังสามารถผ่าน Phase 2 และ 3 จนเกิด Event WIFI_EVENT_STA_CONNECTED ได้สำเร็จก่อน แล้วจึงค่อยไปถูกตัดการเชื่อมต่อในภายหลัง
+```
+
 3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
+```
+จะล้มเหลวตั้งแต่ Phase 2 (Authentication Phase) เนื่องจาก AP จะทำการตรวจสอบ MAC Address ของ STA เทียบกับรายชื่อที่อนุญาตทันทีตั้งแต่เริ่มต้น และจะส่ง Disconnect Reason Code คือ WIFI_REASON_AUTH_FAIL (รหัส 1 หรือ 202) ออกมาปฏิเสธการเชื่อมต่อ
+```
+
 4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+```
+- จุดสิ้นสุด Phase 3 (WIFI_EVENT_STA_CONNECTED): เป็นจุดสิ้นสุดในระดับ Data Link Layer / Physical Layer (Layer 2) หมายถึง ESP32 ได้ทำการจับมือเชื่อมต่อคลื่นวิทยุและตกลงคุณสมบัติกับ Access Point สำเร็จแล้ว แต่ยังไม่สามารถสื่อสารบนเครือข่าย IP ได้
+- จุดสิ้นสุด Phase 5 (IP_EVENT_STA_GOT_IP): เป็นจุดสิ้นสุดในระดับ Network Layer (Layer 3) หมายถึงผ่านกระบวนการขอรับหมายเลข IP Address จาก DHCP Server เรียบร้อยแล้ว พร้อมสำหรับการรับ-ส่งข้อมูลบนระบบเครือข่ายอินเทอร์เน็ตหรือ TCP/IP อย่างสมบูรณ์
+```
